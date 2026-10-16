@@ -320,3 +320,9 @@ log "8. Generating forensic triage snapshot in ${AUDIT_LOG}..."
 } >> "$AUDIT_LOG"
 
 log "Hardening complete! Review ${AUDIT_LOG} immediately for anomalies."
+
+#Critical Post-Execution Checks in CCDC
+#Check the Triage Report Immediately: Run 'less /root/.ccdc_vault_*/triage_report.txt' right after execution. Look closely at the === SUSPECT WEBSHELL SCAN === and === LISTENING PORTS & PROCESSES === sections for unexpected listeners or C2 beacons.
+#Verify Custom Web Ports: If your web server runs a secondary app on a non-standard port (like Tomcat on 8080, Node/Flask on 3000/5000, or an local database port queried by another box), open it immediately before the next scoring polling cycle:'iptables -I INPUT -p tcp --dport 8080 -j ACCEPT'
+#Batch Password Rotation: This script deliberately avoids rotating user passwords automatically so it doesn't desync with the CCDC scoring engine before you're ready. Once you have the White Team password change portal open, you can bulk-rotate non-root user passwords with a separate one-liner.
+#Watch for AllowOverride None Breakage: Setting AllowOverride None in Apache blocks .htaccess backdoors, which is a common Red Team persistence trick. However, if the scored web app uses WordPress or Laravel permalink routing via .htaccess and sub-pages start returning 404, remove -D or AllowOverride None from ccdc-security.conf and reload Apache.
